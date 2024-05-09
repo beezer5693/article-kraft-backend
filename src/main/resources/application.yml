@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: article-kraft
+  profiles:
+    active: ${ACTIVE_PROFILE:dev}
+  datasource:
+    url: jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}
+    username: ${POSTGRESQL_USERNAME}
+    password: ${POSTGRESQL_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLInnoDBDialect
+    generate-ddl: true
+    defer-datasource-initialization: true
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+
+server:
+  port: ${CONTAINER_PORT:8080}
+
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+logging:
+  level:
+    dev.brandon.petwellbackend: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
