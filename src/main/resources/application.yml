@@ -1,6 +1,8 @@
 spring:
   application:
     name: article-kraft
+  config:
+    import: env.properties
   profiles:
     active: ${ACTIVE_PROFILE:dev}
   datasource:
@@ -15,7 +17,7 @@ spring:
     defer-datasource-initialization: true
     show-sql: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -25,7 +27,7 @@ spring:
       api-key: ${OPENAI_API_KEY}
 
 server:
-  port: ${CONTAINER_PORT:8080}
+  port: ${CONTAINER_PORT}
 
 management:
   endpoint:
@@ -36,8 +38,3 @@ management:
       exposure:
         include: health
 
-logging:
-  level:
-    dev.brandon.petwellbackend: DEBUG
-    org.springframework.web: DEBUG
-    org.springframework.security: DEBUG

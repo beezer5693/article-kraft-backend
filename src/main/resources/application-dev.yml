@@ -1,15 +1,41 @@
-# Profile
-ACTIVE_PROFILE: dev
+spring:
+  application:
+    name: article-kraft
+  config:
+    import: env.properties
+  datasource:
+    url: jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}
+    username: ${POSTGRESQL_USERNAME}
+    password: ${POSTGRESQL_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLInnoDBDialect
+    generate-ddl: true
+    defer-datasource-initialization: true
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
 
-# Database
-POSTGRESQL_USERNAME: brandon
-POSTGRESQL_PASSWORD: password
-POSTGRESQL_HOST: 127.0.0.1
-POSTGRESQL_PORT: 5432
-POSTGRESQL_DATABASE: article_kraft
+server:
+  port: ${CONTAINER_PORT}
 
-# Server
-CONTAINER_PORT: 9090
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health
 
-# openai
-OPENAI_API_KEY: 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
+logging:
+  level:
+    org.springframework.security: DEBUG
