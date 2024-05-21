@@ -6,10 +6,10 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum Permission {
-  CLIENT_READ("client:read"),
-  CLIENT_CREATE("client:create"),
-  CLIENT_UPDATE("client:update"),
-  CLIENT_DELETE("client:delete");
+    CLIENT_READ("client:read"),
+    CLIENT_CREATE("client:create"),
+    CLIENT_UPDATE("client:update"),
+    CLIENT_DELETE("client:delete");
 
-  private final String permission;
+    private final String permission;
 }

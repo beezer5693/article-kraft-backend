@@ -38,4 +38,11 @@ management:
 
 logging:
   level:
-    org.springframework.security: DEBUG
+    org:
+      springframework:
+        security: DEBUG
+    web: debug
+
+token:
+  access-token-expiry: 5
+  refresh-token-expiry: 10080

@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 public class UserMapper {
     private final PasswordUtils passwordUtils;
 
-    public UserDto toDto(User user) {
-        return UserDto.builder()
+    public UserDTO toDto(User user) {
+        return UserDTO.builder()
                 .userId(user.getUserId())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
@@ -29,6 +29,7 @@ public class UserMapper {
                 .lastName(registrationRequest.lastName())
                 .email(registrationRequest.email())
                 .password(passwordUtils.encodePassword(registrationRequest::password))
+                .role(Role.CLIENT)
                 .isAccountNonExpired(true)
                 .isAccountNonLocked(true)
                 .isCredentialsNonExpired(true)
@@ -36,7 +37,7 @@ public class UserMapper {
                 .build();
     }
 
-    public User toUser(UserDto userDto) {
+    public User toUser(UserDTO userDto) {
         return User.builder()
                 .userId(UUID.randomUUID().toString())
                 .firstName(userDto.firstName())

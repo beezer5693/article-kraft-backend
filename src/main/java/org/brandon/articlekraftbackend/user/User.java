@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.brandon.articlekraftbackend.common.BaseEntity;
+import org.brandon.articlekraftbackend.token.Token;
+
+import java.util.List;
 
 @SuperBuilder
 @NoArgsConstructor
@@ -27,6 +30,8 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
+    @OneToMany(mappedBy = "user")
+    private List<Token> refreshTokens;
     @Column(name = "is_account_non_expired", nullable = false)
     private boolean isAccountNonExpired;
     @Column(name = "is_account_non_locked", nullable = false)

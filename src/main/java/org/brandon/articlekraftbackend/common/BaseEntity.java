@@ -17,7 +17,7 @@ import org.brandon.articlekraftbackend.audit.Auditable;
 public abstract class BaseEntity extends Auditable {
 
     @Id
-    @SequenceGenerator(name = "users_seq", sequenceName = "users_seq", allocationSize = 1)
+    @SequenceGenerator(name = "base_seq", sequenceName = "base_seq", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Integer id;
 }
