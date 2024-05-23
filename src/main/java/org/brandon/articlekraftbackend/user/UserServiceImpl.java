@@ -24,6 +24,16 @@ public class UserServiceImpl implements UserService {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Override
+    public void saveUser(User user) {
+        try {
+            userRepository.save(user);
+        } catch (DataAccessException e) {
+            LOGGER.error("An error occurred while saving the user to the database", e);
+            throw e;
+        }
+    }
+
+    @Override
     public Response<Map<String, Object>> getUserByEmail(String email) {
         Optional<User> user = findUserByEmail(email);
         if (user.isEmpty()) {
@@ -35,7 +45,8 @@ public class UserServiceImpl implements UserService {
         return Response.success(Map.of("user", userDTO, "access_token", accessToken), HttpStatus.OK);
     }
 
-    private Optional<User> findUserByEmail(String email) {
+    @Override
+    public Optional<User> findUserByEmail(String email) {
         try {
             return userRepository.findByEmail(email);
         } catch (DataAccessException e) {

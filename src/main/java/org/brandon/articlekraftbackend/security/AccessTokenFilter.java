@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.brandon.articlekraftbackend.config.RSAKeys;
 import org.brandon.articlekraftbackend.handlers.ApplicationException;
-import org.brandon.articlekraftbackend.token.TokenRepository;
 import org.brandon.articlekraftbackend.token.TokenService;
 import org.brandon.articlekraftbackend.user.User;
 import org.brandon.articlekraftbackend.user.UserRepository;

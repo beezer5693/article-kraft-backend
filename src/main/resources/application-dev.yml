@@ -46,5 +46,5 @@ logging:
 token:
   access-token-expiry: 5
   refresh-token-expiry: 10080
-  
+
 frontend-url: ${FRONTEND_URL}
