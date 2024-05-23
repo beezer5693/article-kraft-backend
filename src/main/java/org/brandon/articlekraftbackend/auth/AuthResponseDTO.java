@@ -11,9 +11,9 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.NON_NULL)
 public record AuthResponseDTO(
         UserDTO user,
-        @JsonProperty("refresh_token")
+        @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
         String refreshToken,
-        @JsonProperty("access_token")
+        @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
         String accessToken
 ) {
 }

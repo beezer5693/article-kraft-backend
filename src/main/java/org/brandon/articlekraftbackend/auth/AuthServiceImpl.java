@@ -1,7 +1,6 @@
 package org.brandon.articlekraftbackend.auth;
 
 import lombok.RequiredArgsConstructor;
-import org.brandon.articlekraftbackend.handlers.Response;
 import org.brandon.articlekraftbackend.token.Token;
 import org.brandon.articlekraftbackend.token.TokenService;
 import org.brandon.articlekraftbackend.token.TokenType;
@@ -9,7 +8,6 @@ import org.brandon.articlekraftbackend.user.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,7 +28,7 @@ public class AuthServiceImpl implements AuthService {
     private final static Logger LOGGER = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     @Override
-    public Response<AuthResponseDTO> registerUser(RegistrationRequest registrationRequest) {
+    public AuthResponseDTO registerUser(RegistrationRequest registrationRequest) {
         LOGGER.info("Attempting to register user: {}", registrationRequest);
         String userEmail = registrationRequest.email();
         if (isUserAlreadyRegistered(userEmail)) {
@@ -38,37 +36,36 @@ public class AuthServiceImpl implements AuthService {
         }
         User user = mapRegistrationRequestToUser(registrationRequest);
         User registeredUser = saveUser(user);
-        return handleTokenGenerationAndResponse(registeredUser, HttpStatus.CREATED);
+        return handleTokenGenerationAndResponse(registeredUser);
     }
 
     @Override
-    public Response<AuthResponseDTO> loginUser(LoginRequest loginRequest) {
+    public AuthResponseDTO loginUser(LoginRequest loginRequest) {
         authenticateUser(loginRequest);
         Optional<User> user = getUserByEmail(loginRequest.email());
         if (user.isEmpty()) {
             throw new BadCredentialsException("Incorrect email or password");
         }
         User foundUser = user.get();
-        return handleTokenGenerationAndResponse(foundUser, HttpStatus.OK);
+        return handleTokenGenerationAndResponse(foundUser);
     }
 
     @Override
-    public Response<AuthResponseDTO> refreshAccessToken(Authentication authentication) {
+    public AuthResponseDTO refreshAccessToken(Authentication authentication) {
         String email = authentication.getName();
         Optional<User> user = getUserByEmail(email);
         if (user.isEmpty()) {
             throw handleUserNotFoundException(email);
         }
         User foundUser = user.get();
-        return handleTokenGenerationAndResponse(foundUser, HttpStatus.OK);
+        return handleTokenGenerationAndResponse(foundUser);
     }
 
-    private Response<AuthResponseDTO> handleTokenGenerationAndResponse(User user, HttpStatus status) {
+    private AuthResponseDTO handleTokenGenerationAndResponse(User user) {
         tokenService.revokeAllUserRefreshTokens(user);
         Token tokens = createAuthTokens(getUserDetails(user));
         tokenService.saveRefreshToken(tokens.getRefreshToken(), user);
-        AuthResponseDTO authResponse = generateAuthResponse(user, tokens);
-        return Response.success(authResponse, status);
+        return generateAuthResponse(user, tokens);
     }
 
     private AuthResponseDTO generateAuthResponse(User foundUser, Token tokens) {

@@ -1,5 +1,6 @@
 package org.brandon.articlekraftbackend.token;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.brandon.articlekraftbackend.user.User;
 import org.slf4j.Logger;
