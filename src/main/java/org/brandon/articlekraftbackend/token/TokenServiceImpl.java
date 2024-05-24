@@ -1,6 +1,5 @@
 package org.brandon.articlekraftbackend.token;
 
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.brandon.articlekraftbackend.user.User;
 import org.slf4j.Logger;
@@ -47,18 +46,11 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public String createToken(UserDetails user, TokenType type, Function<Token, String> tokenFunction) {
         LOGGER.info("Generating JWT {} for user {}", type.getValue(), user.getUsername());
-        int tokenExpiration = getTokenExpiration(type.getValue());
-        final Jwt encodedToken = encodeJwt(user, tokenExpiration);
-        Token token = switch (type) {
-            case ACCESS -> Token
-                    .builder()
-                    .accessToken(extractTokenPropertyValue(encodedToken, Jwt::getTokenValue))
-                    .build();
-            case REFRESH -> Token
-                    .builder()
-                    .refreshToken(extractTokenPropertyValue(encodedToken, Jwt::getTokenValue))
-                    .build();
-        };
+        final Jwt encodedToken = encodeJwt(user, getTokenExpiration());
+        Token token = Token
+                .builder()
+                .accessToken(extractTokenPropertyValue(encodedToken, Jwt::getTokenValue))
+                .build();
         return tokenFunction.apply(token);
     }
 
@@ -74,10 +66,10 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    public void saveRefreshToken(String token, User user) {
-        Token refreshToken = generateRefreshToken(token, user);
+    public void storeToken(String token, User user) {
+        Token accessToken = generateToken(token, user);
         try {
-            tokenRepository.save(refreshToken);
+            tokenRepository.save(accessToken);
         } catch (DataAccessException e) {
             LOGGER.error("An error occurred trying to access the database", e);
             throw e;
@@ -85,7 +77,7 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    public void revokeAllUserRefreshTokens(User user) {
+    public void revokeAllUserTokens(User user) {
         try {
             var allUserTokens = tokenRepository.findByUserId(user.getId());
             if (allUserTokens.isEmpty()) return;
@@ -98,25 +90,21 @@ public class TokenServiceImpl implements TokenService {
         }
     }
 
+    private int getTokenExpiration() {
+        return tokenConfig.accessTokenExpiry();
+    }
+
     private boolean isTokenExpired(Jwt token) {
         return Objects.requireNonNull(token.getExpiresAt()).isBefore(Instant.now());
-    }
-
-    private int getTokenExpiration(String type) {
-        return getExpirationByTokenType(type);
-    }
-
-    private int getExpirationByTokenType(String type) {
-        return "access_token".equals(type) ? tokenConfig.accessTokenExpiry() : tokenConfig.refreshTokenExpiry();
     }
 
     private Jwt encodeJwt(UserDetails user, Integer expirationMinutes) {
         return jwtEncoder.encode(JwtEncoderParameters.from(buildToken.apply(user, expirationMinutes)));
     }
 
-    private static Token generateRefreshToken(String token, User user) {
+    private static Token generateToken(String token, User user) {
         return Token.builder()
-                .refreshToken(token)
+                .accessToken(token)
                 .isRevoked(false)
                 .user(user)
                 .build();

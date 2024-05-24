@@ -1,18 +1,19 @@
-package org.brandon.articlekraftbackend.security;
+package org.brandon.articlekraftbackend.config;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.brandon.articlekraftbackend.config.RSAKeys;
 import org.brandon.articlekraftbackend.handlers.ApplicationException;
+import org.brandon.articlekraftbackend.token.Token;
 import org.brandon.articlekraftbackend.token.TokenRepository;
 import org.brandon.articlekraftbackend.token.TokenService;
 import org.brandon.articlekraftbackend.user.User;
 import org.brandon.articlekraftbackend.user.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
@@ -35,38 +36,33 @@ import java.util.function.Supplier;
 
 @Component
 @RequiredArgsConstructor
-public class RefreshTokenFilter extends OncePerRequestFilter {
+public class TokenFilter extends OncePerRequestFilter {
     private final TokenService tokenService;
     private final RSAKeys rsaKeys;
     private final HandlerExceptionResolver handlerExceptionResolver;
     private final UserRepository userRepository;
     private final UserDetailsService userDetailsService;
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(TokenFilter.class);
     private final TokenRepository tokenRepository;
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(RefreshTokenFilter.class);
-
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         LOGGER.info("Started jwt request filtering...");
         try {
-            String authHeader = getAuthorizationHeader(request);
+            final String authHeader = getAuthorizationHeader(request);
             if (!isAuthHeaderValid(authHeader)) {
                 continueFilterChain(request, response, filterChain);
                 return;
             }
 
             final String tokenString = extractTokenFromAuthorizationHeader(authHeader);
-            Jwt jwtToken = decodeJwt(tokenString);
-            final String userEmail = extractUserEmailFromToken(jwtToken);
+            final Jwt token = decodeJwt(tokenString);
+            final String userEmail = extractUserEmailFromToken(token);
 
             Optional<User> user = getUserByEmail(userEmail);
-            if (user.isEmpty()) {
-                LOGGER.warn("User {} not found", userEmail);
-                throw new ApplicationException(HttpStatus.UNAUTHORIZED, "Not authorized");
-            }
-
-            if (isSecurityContextHolderNull()) {
-                authenticateRequest(request, user.get(), jwtToken);
+            if (user.isPresent() && isSecurityContextHolderNull()) {
+                authenticateRequest(request, user.get(), token);
             }
 
             continueFilterChain(request, response, filterChain);
@@ -98,22 +94,30 @@ public class RefreshTokenFilter extends OncePerRequestFilter {
     }
 
     private boolean isTokenValid(Jwt token, UserDetails userDetails) {
-        return tokenService.isTokenValid(token, userDetails) && isTokenNotRevoked(token);
+        return tokenService.isTokenValid(token, userDetails);
     }
 
     private void authenticateRequest(HttpServletRequest request, User user, Jwt token) {
         UserDetails userDetails = getUserDetails(user::getEmail);
-        if (!isTokenValid(token, userDetails)) {
-            LOGGER.warn("Failed to authenticate request");
-            throw new ApplicationException(HttpStatus.UNAUTHORIZED, "Not authorized");
-        }
+        validateToken(token, userDetails);
         setSecurityContextHolder(userDetails, request);
     }
 
-    private Boolean isTokenNotRevoked(Jwt token) {
-        return tokenRepository.findByRefreshToken(token.getTokenValue())
-                .map(t -> !t.isRevoked)
-                .orElse(false);
+    private void validateToken(Jwt token, UserDetails userDetails) {
+        if (!isTokenValid(token, userDetails) || isTokenRevoked(token::getTokenValue)) {
+            LOGGER.warn("Failed to authenticate request");
+            throw new ApplicationException(HttpStatus.UNAUTHORIZED, "Not authorized");
+        }
+    }
+
+    private boolean isTokenRevoked(Supplier<String> token) {
+        try {
+            Optional<Token> accessToken = tokenRepository.findByAccessToken(token.get());
+            return accessToken.map(Token::isRevoked).orElse(false);
+        } catch (DataAccessException e) {
+            LOGGER.error("Failed to revoke token: {}", token);
+            throw e;
+        }
     }
 
     private void setSecurityContextHolder(UserDetails userDetails, HttpServletRequest request) {

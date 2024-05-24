@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
         LOGGER.info("Attempting to register user: {}", registrationRequest);
         String userEmail = registrationRequest.email();
         if (isUserAlreadyRegistered(userEmail)) {
-            throwUserExistsException(userEmail);
+            handleUserExistsException(userEmail);
         }
         User user = mapRegistrationRequestToUser(registrationRequest);
         User registeredUser = saveUser(user);
@@ -62,17 +63,16 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private AuthResponseDTO handleTokenGenerationAndResponse(User user) {
-        tokenService.revokeAllUserRefreshTokens(user);
-        Token tokens = createAuthTokens(getUserDetails(user));
-        tokenService.saveRefreshToken(tokens.getRefreshToken(), user);
-        return generateAuthResponse(user, tokens);
+        tokenService.revokeAllUserTokens(user);
+        String token = generateAccessToken(getUserDetails(user));
+        tokenService.storeToken(token, user);
+        return generateAuthResponse(user, token);
     }
 
-    private AuthResponseDTO generateAuthResponse(User foundUser, Token tokens) {
+    private AuthResponseDTO generateAuthResponse(User foundUser, String token) {
         return AuthResponseDTO.builder()
                 .user(mapToDto(foundUser))
-                .accessToken(tokens.getAccessToken())
-                .refreshToken(tokens.getRefreshToken())
+                .accessToken(token)
                 .build();
     }
 
@@ -110,10 +110,8 @@ public class AuthServiceImpl implements AuthService {
         authenticationManager.authenticate(token);
     }
 
-    private Token createAuthTokens(UserDetails userDetails) {
-        String accessToken = tokenService.createToken(userDetails, TokenType.ACCESS, Token::getAccessToken);
-        String refreshToken = tokenService.createToken(userDetails, TokenType.REFRESH, Token::getRefreshToken);
-        return Token.builder().accessToken(accessToken).refreshToken(refreshToken).build();
+    private String generateAccessToken(UserDetails userDetails) {
+        return tokenService.createToken(userDetails, TokenType.ACCESS, Token::getAccessToken);
     }
 
     private User mapRegistrationRequestToUser(RegistrationRequest registrationRequest) {
@@ -135,9 +133,9 @@ public class AuthServiceImpl implements AuthService {
         return ex;
     }
 
-    private static void throwUserExistsException(String userEmail) {
+    private static void handleUserExistsException(String email) {
         String errorMessage = "A user with the email you provided already exists.";
-        UserAlreadyExistsException ex = new UserAlreadyExistsException(errorMessage, userEmail);
+        UserAlreadyExistsException ex = new UserAlreadyExistsException(errorMessage, email);
         LOGGER.warn(errorMessage, ex);
         throw ex;
     }

@@ -4,13 +4,13 @@ import java.util.UUID;
 
 import lombok.RequiredArgsConstructor;
 import org.brandon.articlekraftbackend.auth.RegistrationRequest;
-import org.brandon.articlekraftbackend.util.PasswordUtils;
+import org.brandon.articlekraftbackend.helpers.PasswordHelper;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class UserMapper {
-    private final PasswordUtils passwordUtils;
+    private final PasswordHelper passwordHelper;
 
     public UserDTO toDto(User user) {
         return UserDTO.builder()
@@ -28,7 +28,7 @@ public class UserMapper {
                 .firstName(registrationRequest.firstName())
                 .lastName(registrationRequest.lastName())
                 .email(registrationRequest.email())
-                .password(passwordUtils.encodePassword(registrationRequest::password))
+                .password(passwordHelper.encodePassword(registrationRequest::password))
                 .role(Role.CLIENT)
                 .isAccountNonExpired(true)
                 .isAccountNonLocked(true)

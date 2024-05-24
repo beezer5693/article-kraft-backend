@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.brandon.articlekraftbackend.handlers.Response;
-import org.brandon.articlekraftbackend.util.CookieUtil;
+import org.brandon.articlekraftbackend.helpers.CookieHelper;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +18,6 @@ import java.util.Arrays;
 public class AuthController {
     private final AuthService authService;
     private static final String ACCESS_TOKEN = "access-token";
-    private static final String REFRESH_TOKEN = "refresh-token";
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
@@ -43,12 +42,7 @@ public class AuthController {
     }
 
     private void createTokensAndAddToResponseHeader(AuthResponseDTO authResponseDTO, HttpServletResponse response) {
-        Cookie accessTokenCookie = CookieUtil.generateCookie(ACCESS_TOKEN, authResponseDTO.accessToken());
-        Cookie refreshTokenCookie = CookieUtil.generateCookie(REFRESH_TOKEN, authResponseDTO.refreshToken());
-        addAuthTokensToResponseHeader(response, accessTokenCookie, refreshTokenCookie);
-    }
-
-    private void addAuthTokensToResponseHeader(HttpServletResponse response, Cookie... cookies) {
-        Arrays.stream(cookies).forEach(response::addCookie);
+        Cookie accessTokenCookie = CookieHelper.generateCookie(ACCESS_TOKEN, authResponseDTO.accessToken());
+        CookieHelper.attachCookiesToResponseHeader(response, accessTokenCookie);
     }
 }

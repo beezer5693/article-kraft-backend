@@ -1,4 +1,4 @@
-package org.brandon.articlekraftbackend.security;
+package org.brandon.articlekraftbackend.config;
 
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -7,7 +7,6 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
-import org.brandon.articlekraftbackend.config.RSAKeys;
 import org.brandon.articlekraftbackend.user.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +27,7 @@ public class AuthConfig {
     private final CustomUserDetailsService customUserDetailsService;
     private final RSAKeys rsaKeys;
 
-    private static final Integer STRENGTH = 14;
+    private static final int STRENGTH = 14;
 
     @Bean
     public AuthenticationProvider authenticationProvider() {

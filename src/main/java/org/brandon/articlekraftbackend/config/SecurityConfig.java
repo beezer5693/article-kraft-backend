@@ -1,4 +1,4 @@
-package org.brandon.articlekraftbackend.security;
+package org.brandon.articlekraftbackend.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,8 +27,7 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final AuthenticationProvider authenticationProvider;
-    private final RefreshTokenFilter refreshTokenFilter;
-    private final AccessTokenFilter accessTokenFilter;
+    private final TokenFilter tokenFilter;
 
     @Value("${frontend-url}")
     private String FRONTEND_URL;
@@ -39,14 +38,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .securityMatcher(new AntPathRequestMatcher("/api/v1/auth/**"))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/refresh").authenticated()
-                        .anyRequest().permitAll()
-                )
-                .authenticationProvider(authenticationProvider)
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()))
-                .addFilterBefore(refreshTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
@@ -59,7 +52,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()))
-                .addFilterBefore(accessTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider)
                 .build();
     }

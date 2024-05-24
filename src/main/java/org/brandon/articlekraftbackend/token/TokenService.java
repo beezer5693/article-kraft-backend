@@ -13,7 +13,7 @@ public interface TokenService {
 
     boolean isTokenValid(Jwt token, UserDetails user);
 
-    void saveRefreshToken(String token, User user);
+    void storeToken(String token, User user);
 
-    void revokeAllUserRefreshTokens(User user);
+    void revokeAllUserTokens(User user);
 }

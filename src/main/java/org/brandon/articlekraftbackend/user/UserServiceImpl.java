@@ -3,12 +3,14 @@ package org.brandon.articlekraftbackend.user;
 import lombok.RequiredArgsConstructor;
 import org.brandon.articlekraftbackend.handlers.Response;
 import org.brandon.articlekraftbackend.token.Token;
+import org.brandon.articlekraftbackend.token.TokenRepository;
 import org.brandon.articlekraftbackend.token.TokenService;
 import org.brandon.articlekraftbackend.token.TokenType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -40,7 +42,9 @@ public class UserServiceImpl implements UserService {
             throw handleUserNotFoundException(email);
         }
         User foundUser = user.get();
-        String accessToken = tokenService.createToken(new CustomUserDetails(foundUser), TokenType.ACCESS, Token::getAccessToken);
+        tokenService.revokeAllUserTokens(foundUser);
+        String accessToken = tokenService.createToken(getUserDetails(foundUser), TokenType.ACCESS, Token::getAccessToken);
+        tokenService.storeToken(accessToken, foundUser);
         UserDTO userDTO = mapUserToDTO(user.get());
         return Response.success(Map.of("user", userDTO, "access_token", accessToken), HttpStatus.OK);
     }
@@ -57,6 +61,10 @@ public class UserServiceImpl implements UserService {
 
     private UserDTO mapUserToDTO(User user) {
         return userMapper.toDto(user);
+    }
+
+    private static UserDetails getUserDetails(User foundUser) {
+        return new CustomUserDetails(foundUser);
     }
 
     private static UserNotFoundException handleUserNotFoundException(String email) {

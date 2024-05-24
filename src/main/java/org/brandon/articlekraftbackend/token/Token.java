@@ -16,12 +16,9 @@ import org.brandon.articlekraftbackend.user.User;
 @Entity
 @Table(name = "_tokens")
 public class Token extends BaseEntity {
-    @Transient
+    @Column(name = "access_token", length = 1000)
     @JsonProperty("access_token")
     private String accessToken;
-    @Column(name = "refresh_token", length = 1000)
-    @JsonProperty("refresh_token")
-    private String refreshToken;
     @Column(nullable = false)
     public boolean isRevoked;
     @ManyToOne(fetch = FetchType.LAZY)
