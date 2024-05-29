@@ -1,13 +1,6 @@
 spring:
   application:
     name: article-kraft
-  config:
-    import: env.properties
-  datasource:
-    url: jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}
-    username: ${POSTGRESQL_USERNAME}
-    password: ${POSTGRESQL_PASSWORD}
-    driver-class-name: org.postgresql.Driver
   jpa:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLInnoDBDialect
@@ -19,10 +12,20 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_SENDER_USERNAME}
+    password: ${MAIL_SENDER_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 server:
   port: ${CONTAINER_PORT}
@@ -44,6 +47,7 @@ logging:
     web: debug
 
 token:
-  access-token-expiry: 10080
-  
+  access-token-expiry: 365
+  secret-key: ${SECRET_KEY}
+
 frontend-url: ${FRONTEND_URL}
