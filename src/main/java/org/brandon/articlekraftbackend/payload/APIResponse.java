@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.brandon.articlekraftbackend.utils.DateTimeUtil;
+import org.brandon.articlekraftbackend.utils.DateTimeUtils;
 import org.springframework.http.HttpStatus;
 
 @Builder
@@ -56,7 +56,7 @@ public class APIResponse<T> {
                 .statusCode(statusCode.value())
                 .path(request.getServletPath())
                 .errors(errors)
-                .timestamp(DateTimeUtil.parseAndFormatDateTime(LocalDateTime.now()))
+                .timestamp(DateTimeUtils.parseAndFormatDateTime(LocalDateTime.now()))
                 .build();
     }
 

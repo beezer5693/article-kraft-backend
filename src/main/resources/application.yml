@@ -27,19 +27,26 @@ spring:
     openai:
       api-key: ${OPENAI_API_KEY}
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${MAIL_SENDER_USERNAME}
-    password: ${MAIL_SENDER_PASSWORD}
+    host: ${EMAIL_HOST}
+    port: ${EMAIL_PORT}
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_PASSWORD}
+    default-encoding: UTF-8
     properties:
       mail:
+        mime:
+          charset: UTF-8
         smtp:
+          writetimeout: 10000
+          connectiontimeout: 10000
+          timeout: 10000
           auth: true
           starttls:
             enable: true
+            required: true
 
 server:
-  port: ${CONTAINER_PORT}
+  port: ${CONTAINER_PORT:8080}
 
 management:
   endpoint:
@@ -49,6 +56,10 @@ management:
     web:
       exposure:
         include: health
+
+token:
+  access-token-expiry: ${ACCESS_TOKEN_EXPIRATION_DURATION}
+  secret-key: ${SECRET_KEY}
 
 frontend-url: ${FRONTEND_URL}
 

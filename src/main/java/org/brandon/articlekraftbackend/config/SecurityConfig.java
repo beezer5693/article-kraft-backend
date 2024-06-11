@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -28,6 +27,10 @@ public class SecurityConfig {
     private final AuthenticationProvider authenticationProvider;
     private final TokenFilter tokenFilter;
 
+    private static final String[] WHITE_LIST = {
+            "/api/v1/auth/**",
+    };
+
     @Value("${frontend-url}")
     private String FRONTEND_URL;
 
@@ -36,19 +39,10 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .securityMatcher(new AntPathRequestMatcher("/api/v1/auth/**"))
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
-                .build();
-    }
-
-    @Bean
-    SecurityFilterChain userSecurityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .securityMatcher(new AntPathRequestMatcher("/api/v1/users/**"))
-                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(WHITE_LIST).permitAll()
+                        .anyRequest().authenticated()
+                )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class)

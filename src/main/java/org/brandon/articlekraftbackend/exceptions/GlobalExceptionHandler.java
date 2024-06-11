@@ -2,6 +2,8 @@ package org.brandon.articlekraftbackend.exceptions;
 
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.brandon.articlekraftbackend.forgotpassword.PasswordsMismatchException;
+import org.brandon.articlekraftbackend.forgotpassword.ResetPasswordCodeExpiredException;
 import org.brandon.articlekraftbackend.payload.APIResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +37,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public APIResponse<Object> handleUserNotFoundException(HttpServletRequest request, EntityNotFoundException e) {
         LOGGER.error(e.getMessage(), e);
-        return APIResponse.error(HttpStatus.NOT_FOUND, e.getMessage(), Map.of("id", e.getIdentifier()), request);
+        return APIResponse.error(HttpStatus.NOT_FOUND, e.getMessage(), Map.of("identifier", e.getIdentifier()), request);
     }
 
     @ExceptionHandler(PasswordsMismatchException.class)
@@ -45,9 +47,9 @@ public class GlobalExceptionHandler {
         return APIResponse.error(HttpStatus.BAD_REQUEST, e.getMessage(), null, request);
     }
 
-    @ExceptionHandler(OTPExpiredException.class)
+    @ExceptionHandler(ResetPasswordCodeExpiredException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public APIResponse<Object> handleOTPExpiredException(HttpServletRequest request, OTPExpiredException e) {
+    public APIResponse<Object> handleOTPExpiredException(HttpServletRequest request, ResetPasswordCodeExpiredException e) {
         LOGGER.error(e.getMessage(), e);
         return APIResponse.error(HttpStatus.BAD_REQUEST, e.getMessage(), null, request);
     }
