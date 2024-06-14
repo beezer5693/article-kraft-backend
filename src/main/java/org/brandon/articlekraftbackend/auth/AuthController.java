@@ -17,25 +17,23 @@ public class AuthController {
 
   @PostMapping("/register")
   @ResponseStatus(HttpStatus.CREATED)
-  public APIResponse<AuthResponseDTO> register(
-      @RequestBody @Valid RegistrationRequest registrationRequest) {
-    return authService.registerUser(registrationRequest);
+  public APIResponse<AuthResponseDTO> register(@RequestBody @Valid RegistrationRequest request) {
+    return authService.registerUser(request);
   }
 
   @PostMapping("/login")
-  public APIResponse<AuthResponseDTO> login(@RequestBody @Valid LoginRequest loginRequest) {
-    return authService.loginUser(loginRequest);
+  public APIResponse<AuthResponseDTO> login(@RequestBody @Valid LoginRequest request) {
+    return authService.loginUser(request);
   }
 
   @PostMapping("/forgot-password")
   public APIResponse<?> forgotPassword(
-      @RequestBody @Valid ForgotPasswordRequestDTO forgotPasswordRequestDTO) {
-    return authService.forgotPassword(forgotPasswordRequestDTO);
+      @RequestBody @Valid ForgotPasswordRequestDTO requestDTO) {
+    return authService.forgotPassword(requestDTO);
   }
 
   @PostMapping("/reset-password")
-  public APIResponse<?> resetPassword(
-      @RequestBody @Valid ResetPasswordRequest resetPasswordRequest) {
-    return authService.resetPassword(resetPasswordRequest);
+  public APIResponse<?> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
+    return authService.resetPassword(request);
   }
 }

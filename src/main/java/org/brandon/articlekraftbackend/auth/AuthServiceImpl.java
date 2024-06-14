@@ -1,5 +1,6 @@
 package org.brandon.articlekraftbackend.auth;
 
+import java.util.HashMap;
 import lombok.RequiredArgsConstructor;
 import org.brandon.articlekraftbackend.email.EmailService;
 import org.brandon.articlekraftbackend.email.ResetPasswordEmailRequest;
@@ -76,14 +77,14 @@ public class AuthServiceImpl implements AuthService {
   @Override
   public APIResponse<?> resetPassword(ResetPasswordRequest request) {
     verifyPasswordAndConfirmPasswordMatch(request);
-    ForgotPasswordRequest forgotPasswordRequest = forgotPasswordRequestService.findForgotPasswordRequestByCode(
+    var forgotPasswordRequest = forgotPasswordRequestService.findForgotPasswordRequestByCode(
         request.code());
     String code = forgotPasswordRequest.getCode();
-    User user = userService.findUserByResetPasswordCode(code);
     if (forgotPasswordRequestService.isCodeExpired(forgotPasswordRequest)) {
       forgotPasswordRequestService.deleteForgotPasswordRequestByCode(code);
       throw new ResetPasswordCodeExpiredException();
     }
+    User user = userService.findUserByResetPasswordCode(code);
     userService.updatePassword(user, request);
     forgotPasswordRequestService.deleteForgotPasswordRequestByCode(code);
     return APIResponse.success(null, HttpStatus.OK);
@@ -101,10 +102,7 @@ public class AuthServiceImpl implements AuthService {
     LOGGER.info("Generating response for user: {}", user.getUserId());
     String token = revokeAndGenerateAccessToken(user);
     UserDTO userDTO = userMapper.toDto(user);
-    var authResponseDTO = AuthResponseDTO.builder()
-        .user(userDTO)
-        .accessToken(token)
-        .build();
+    var authResponseDTO = AuthResponseDTO.builder().user(userDTO).accessToken(token).build();
     return APIResponse.success(authResponseDTO, status);
   }
 

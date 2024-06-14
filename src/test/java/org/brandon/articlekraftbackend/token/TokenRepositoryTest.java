@@ -45,6 +45,7 @@ class TokenRepositoryTest {
   void beforeEach() {
     tokenRepository.deleteAll();
     userRepository.deleteAll();
+    
     user = User.builder()
         .userId(UUID.randomUUID().toString())
         .firstName("Brandon")
@@ -58,6 +59,7 @@ class TokenRepositoryTest {
         .isCredentialsNonExpired(true)
         .isEnabled(true)
         .build();
+
     user2 = User.builder()
         .userId(UUID.randomUUID().toString())
         .firstName("Arantxa")
@@ -71,6 +73,7 @@ class TokenRepositoryTest {
         .isCredentialsNonExpired(true)
         .isEnabled(true)
         .build();
+
     token = Token.builder()
         .accessToken("123456789")
         .isRevoked(false)
